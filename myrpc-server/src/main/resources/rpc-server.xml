@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="calculator" class="me.jesonlee.rpc.server.Service">
+        <constructor-arg name="interfaceName" value="version1.rpc.me.jesonlee.rpc.client.Calculator"/>
+        <constructor-arg name="implName" value="me.jesonlee.rpc.server.CalculatorImpl"/>
+    </bean>
+    <bean id="serviceRegistry" class="me.jesonlee.rpc.common.ServiceRegistry">
+        <constructor-arg name="hosts" value="192.168.56.101:2181,192.168.56.102:2181,192.168.56.103:2181"/>
+    </bean>
+</beans>
