@@ -11,6 +11,7 @@ public class ServiceRequest implements Serializable {
     private String serviceName;
     private String methodName;
     private Object[] args;
+    private long id;
 
     public String getServiceName() {
         return serviceName;
@@ -43,5 +44,13 @@ public class ServiceRequest implements Serializable {
                 ", methodName='" + methodName + '\'' +
                 ", args=" + Arrays.toString(args) +
                 '}';
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
     }
 }

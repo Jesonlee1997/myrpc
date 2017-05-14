@@ -9,6 +9,7 @@
         <module name="myrpc-client" />
         <module name="myrpc-common" />
         <module name="myrpc-server" />
+        <module name="myrpc-test" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -16,6 +17,7 @@
       <module name="myrpc-client" target="1.8" />
       <module name="myrpc-common" target="1.8" />
       <module name="myrpc-server" target="1.8" />
+      <module name="myrpc-test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

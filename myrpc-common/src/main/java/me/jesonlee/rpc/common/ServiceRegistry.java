@@ -11,14 +11,12 @@ import java.util.concurrent.CountDownLatch;
  * on 2017/5/13.
  */
 public class ServiceRegistry {
-    private String hosts;
     private final String servicesRootPath = "/services";
     private ZooKeeper zooKeeper;
 
 
     public ServiceRegistry(String hosts) {
         try {
-            this.hosts = hosts;
             Integer sessionTimeOut = 5000;//通讯的过期时长
             CountDownLatch latch = new CountDownLatch(1);
             zooKeeper = new ZooKeeper(hosts, sessionTimeOut, watchedEvent -> {

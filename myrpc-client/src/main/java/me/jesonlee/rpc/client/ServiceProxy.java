@@ -15,7 +15,7 @@ import java.lang.reflect.Proxy;
  */
 public class ServiceProxy {
     //TODO:host和port是ZooKeeper服务器的地址，Client从服务端获取服务对应的列表
-    private RpcClient rpcClient = new RpcClient("127.0.0.1", 8080);
+    private RpcClient rpcClient = new RpcClient();
 
     /**
      * 创建特定接口的代理

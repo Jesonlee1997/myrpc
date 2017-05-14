@@ -7,21 +7,34 @@ import java.io.Serializable;
  * on 2017/5/12.
  */
 public class ServiceResponse implements Serializable {
-    public static ServiceResponse OK(Object o) {
+    private static final int OK = 200;
+    private static final int SERVICE_NOT_FOUND = 404;
+    private static final int PROVIDER_NOT_FOUND = 406;
+
+    public static ServiceResponse OK(Object o, long id) {
         ServiceResponse response = new ServiceResponse();
-        response.setStatus(200);
+        response.setStatus(OK);
         response.setResult(o);
         return response;
     }
 
-    public static ServiceResponse NotFound() {
+    public static ServiceResponse ServiceNotFound(long id) {
         ServiceResponse response = new ServiceResponse();
-        response.setStatus(404);
+        response.setId(id);
+        response.setStatus(SERVICE_NOT_FOUND);
+        return response;
+    }
+
+    public static ServiceResponse ProviderNotFound(long id) {
+        ServiceResponse response = new ServiceResponse();
+        response.setId(id);
+        response.setStatus(PROVIDER_NOT_FOUND);
         return response;
     }
 
     private int status;//表示请求的状态 200请求成功
     private Object result;//表示服务调用的结果
+    private long id;
 
     public int getStatus() {
         return status;
@@ -39,11 +52,11 @@ public class ServiceResponse implements Serializable {
         this.result = result;
     }
 
-    @Override
-    public String toString() {
-        return "me.jesonlee.rpc.common.ServiceResponse{" +
-                "status=" + status +
-                ", result=" + result +
-                '}';
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

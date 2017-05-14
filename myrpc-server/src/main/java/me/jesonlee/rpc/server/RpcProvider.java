@@ -5,6 +5,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import me.jesonlee.rpc.common.Calculator;
 
 /**
@@ -23,14 +24,21 @@ public class RpcProvider {
         ServerBootstrap bootstrap = new ServerBootstrap();
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup worker = new NioEventLoopGroup();
-        RpcHandler handler = new RpcHandler();
         bootstrap.group(boss, worker)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(handler);
+                        pipeline.addLast(new ResponseHandler());
+
+                        pipeline.addFirst(new LengthFieldBasedFrameDecoder(
+                                10000000,
+                                0,
+                                4,
+                                0,
+                                4));
+                        pipeline.addLast(new RpcHandler());
                     }
                 });
         ChannelFuture future = bootstrap.bind(port);

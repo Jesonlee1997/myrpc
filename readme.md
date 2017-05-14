@@ -1,5 +1,6 @@
 JesonLee的RPC框架，使用Netty+Hessian+zookeeper完成  
 -----
+
 common包中包括  
 通用的ServiceRequest的定义  
 通用的ServiceResponse的定义  
@@ -34,26 +35,32 @@ server包的使用
 
 ---
 client包的使用  
-配置注册中心ServiceRegistry
-使用Spring配置需要引用的的服务
-然后就可以直接在程序中使用这些远程服务
+配置注册中心ServiceRegistry  
+使用Spring配置需要引用的的服务   
+然后就可以直接在程序中使用这些远程服务  
 
 客户端实现：  
 在Spring中配置服务的名称（接口的名字） TODO  
-实现服务的动态代理（透明的）。
+实现服务的动态代理（透明的）。  
 具体流程：
-1. 创建一个RpcClient实例
+1. 在Spring容器启动时，会生成服务的远程代理  
+1. 创建一个RpcClient实例，每个代理中都拥有RpcClient的引用
 2. rpcClient实例连接远程ZooKeeper服务器，并在本地保存ZooKeeper服务器提供的服务列表
-3. 每当应用需要调用远程服务时，都会创建一个ServiceRequest对象，转由rpcClient去调用
-4. rpcClient根据服务名对服务器列表进行路由，对其中的一台服务器发送请求
+2. 注册监听器监听服务器节点的变化
+3. 当需要调用远程服务时，直接从本地的服务列表中查找
+4. 如果没有找到可以直接返回没找到
+3. 根据远程服务器的地址建立TCP短连接，创建一个ServiceRequest对象，转由rpcClient去调用
+4. rpcClient从线程池中拿取一个线程进行调用，直到结果返回前该线程都处于阻塞状态
 5. 将服务器返回的数据序列化为ServiceResponse对象，判断状态，接收返回结果
-6. 一般情况下这种请求都需要同步调用，这里使用promise来实现同步
 
-在Spring容器启动时，会生成服务的远程代理  
-调用服务时会先从ServiceRegistry中拉取服务器列表
-随机选择一个Server进行访问，发送一个ServiceRequest请求，同步接收结果
-判断结果的status，获得结果。
+调用服务时会先从ServiceRegistry中拉取服务器列表  
+随机选择一个Server进行访问，发送一个ServiceRequest请求，同步接收结果  
+判断结果的status，获得结果。  
 
-额外信息：
-与server端建立的是长连接
-实现服务的同步调用依靠的是netty的promise机制
+额外信息：  
+与server端建立的是长连接  
+实现服务的同步调用依靠的是netty的promise机制  
+实现服务的异步调用则用到了Future  
+
+myrpc-test中包含了Netty的一个简单的聊天服务器和Netty回显服务器
+以及一些测试程序

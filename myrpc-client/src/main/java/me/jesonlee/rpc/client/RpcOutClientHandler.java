@@ -18,7 +18,8 @@ public class RpcOutClientHandler extends ChannelOutboundHandlerAdapter {
         ServiceRequest request = (ServiceRequest) msg;
         //将请求序列化为byte数组
         byte[] bytes = HessianUtil.requestToBytes(request);
-        ByteBuf buf = Unpooled.buffer(bytes.length);
+        ByteBuf buf = Unpooled.buffer(bytes.length + 4);
+        buf.writeInt(bytes.length);
         buf.writeBytes(bytes);
         ctx.writeAndFlush(buf);
     }
