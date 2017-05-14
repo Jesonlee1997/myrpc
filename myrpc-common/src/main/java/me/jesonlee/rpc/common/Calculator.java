@@ -5,6 +5,6 @@ package me.jesonlee.rpc.common;
  * on 2017/5/11.
  */
 public interface Calculator {
-    int add(int a, int b);
-    int sub(int a, int b);
+    Integer add(int a, int b);
+    Integer sub(int a, int b);
 }

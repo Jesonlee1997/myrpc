@@ -19,6 +19,10 @@ public class RpcHandler extends ChannelInboundHandlerAdapter {
         byte[] bytes = new byte[buf.readableBytes()];
         buf.readBytes(bytes);
         ServiceRequest serviceRequest = HessianUtil.bytesToRequest(bytes);
-        serviceManager.addServiceTask(serviceRequest, ctx.channel());
+
+        //只处理ServiceRequest类型的数据
+        if (serviceRequest != null) {
+            serviceManager.addServiceTask(serviceRequest, ctx.channel());
+        }
     }
 }

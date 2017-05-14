@@ -20,7 +20,7 @@ public class HessianUtil {
         if (request instanceof ServiceRequest) {
             return (ServiceRequest) request;
         } else {
-            System.out.println("请求错误：传输的不是TransferObject对象");
+            System.out.println("请求错误：传输的不是ServiceRequest对象");
             return null;
         }
 
@@ -36,9 +36,9 @@ public class HessianUtil {
     public static ServiceResponse bytesToResponse(byte[] bytes) throws IOException {
         ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
         HessianInput input = new HessianInput(stream);
-        Object request = input.readObject();
-        if (request instanceof ServiceResponse) {
-            return (ServiceResponse) request;
+        Object response = input.readObject();
+        if (response instanceof ServiceResponse) {
+            return (ServiceResponse) response;
         } else {
             System.out.println("请求错误：传输的不是ServiceResponse对象");
             return null;

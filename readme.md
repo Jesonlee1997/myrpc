@@ -15,8 +15,8 @@ common包中包括
 <br>
 ---
 server包的使用  
-使用Spring配置需要发布的Service  
-配置注册中心ServiceRegistry  
+在Spring的配置文件中配置需要发布的Service
+配置注册中心ServiceRegistry的zookeeper服务器的地址  
 然后启动server和Spring容器  
 
 服务端实现原理：

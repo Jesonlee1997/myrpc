@@ -7,14 +7,18 @@ import java.io.Serializable;
  * on 2017/5/12.
  */
 public class ServiceResponse implements Serializable {
-    private static final int OK = 200;
-    private static final int SERVICE_NOT_FOUND = 404;
-    private static final int PROVIDER_NOT_FOUND = 406;
+    public static final int OK = 200;
+    public static final int SERVICE_NOT_FOUND = 404;
+    public static final int PROVIDER_NOT_FOUND = 406;
+    public static final int TIMEOUT = 407;
+    public static final int THREAD_EXCEPTION = 408;
+    public static final int BAD_TYPE = 409;
 
     public static ServiceResponse OK(Object o, long id) {
         ServiceResponse response = new ServiceResponse();
         response.setStatus(OK);
         response.setResult(o);
+        response.setId(id);
         return response;
     }
 
@@ -25,16 +29,33 @@ public class ServiceResponse implements Serializable {
         return response;
     }
 
-    public static ServiceResponse ProviderNotFound(long id) {
+    public static ServiceResponse Timeout(long id) {
         ServiceResponse response = new ServiceResponse();
         response.setId(id);
-        response.setStatus(PROVIDER_NOT_FOUND);
+        response.setStatus(TIMEOUT);
+        return response;
+    }
+
+    public static ServiceResponse ThreadException() {
+        ServiceResponse response = new ServiceResponse();
+        response.setStatus(THREAD_EXCEPTION);
+        return response;
+    }
+
+    /**
+     * 服务端收到的请求阿虎局不是ServiceRequest类型
+     * 或者客户端收到数据不是ServiceResponse类型
+     * @return
+     */
+    public static ServiceResponse BadType() {
+        ServiceResponse response = new ServiceResponse();
+        response.setStatus(BAD_TYPE);
         return response;
     }
 
     private int status;//表示请求的状态 200请求成功
     private Object result;//表示服务调用的结果
-    private long id;
+    private long id = -1;
 
     public int getStatus() {
         return status;

@@ -20,7 +20,7 @@ public class TestZookeeper {
         //第二个参数是Zookeeper，通讯的过期时长
         Integer sessionTimeOut = 5000;
         //第三个是watcher，监听连接上zookeeper后的事件
-        //异步连接  TODO:CountDownLatch
+        //异步连接
         CountDownLatch latch = new CountDownLatch(1);
         zooKeeper = new ZooKeeper(CONN, sessionTimeOut, watchedEvent -> {
             if (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) {

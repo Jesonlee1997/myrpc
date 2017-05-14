@@ -26,6 +26,7 @@ public class RpcProvider {
         EventLoopGroup worker = new NioEventLoopGroup();
         bootstrap.group(boss, worker)
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_BACKLOG, 1024)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
