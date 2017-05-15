@@ -1,6 +1,6 @@
 JesonLee的RPC框架，使用Netty+Hessian+zookeeper完成  
 -----
-
+<br>
 common包中包括  
 通用的ServiceRequest的定义  
 通用的ServiceResponse的定义  
@@ -39,8 +39,12 @@ client包的使用
 使用Spring配置需要引用的的服务   
 然后就可以直接在程序中使用这些远程服务  
 
+client端有异步和同步两种服务调用方式
+同步调用的使用方法：在代服务调用的代码块开始前调用ServiceProxy.setSync()
+异步调用的使用方法：在代服务调用的代码块开始前调用ServiceProxy.setAsync()  
+具体原理请查看myrpc-client/readme.md
 客户端实现：  
-在Spring中配置服务的名称（接口的名字） TODO  
+在Spring中配置服务的名称（接口的名字）
 实现服务的动态代理（透明的）。  
 具体流程：
 1. 在Spring容器启动时，会生成服务的远程代理  

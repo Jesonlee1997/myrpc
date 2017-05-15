@@ -116,7 +116,7 @@ public class ServiceManager {
             Object[] args = request.getArgs();
             Service service = serviceMap.get(serviceName);
             if (service == null) {
-                channel.write(ServiceResponse.ServiceNotFound(request.getId()));
+                channel.write(ServiceResponse.ServiceOffline(serviceName, request.getId()));
                 return;
             }
             Object result = service.invoke(methodName, args);

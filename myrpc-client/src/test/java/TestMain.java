@@ -10,28 +10,26 @@ import org.junit.Test;
  */
 public class TestMain {
     private RpcContext rpcContext = RpcContext.getInstance();
-    private int num = 1;
+    private int num = 500;
 
     @Test
     //测试同步调用
     public void test1() {
-        long start = System.currentTimeMillis();
+
         ServiceProxy proxy = new ServiceProxy();
-        proxy.setSync();
+        ServiceProxy.setSync();
 
         Calculator calculator = proxy.createProxy(Calculator.class);
-        long end = System.currentTimeMillis();
-        System.out.println(end - start);
 
 
         Integer[] results = new Integer[num];
 
-        start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         for (int i = 0; i < num; i++) {
             results[i] = calculator.add(0, i*2);
         }
 
-        end = System.currentTimeMillis();
+        long end = System.currentTimeMillis();
         System.out.println(end - start);
 
         for (int result : results) {
@@ -46,7 +44,7 @@ public class TestMain {
     //测试异步调用
     public void test2() {
         ServiceProxy proxy = new ServiceProxy();
-        proxy.setAsync();
+        ServiceProxy.setAsync();
         Calculator calculator = proxy.createProxy(Calculator.class);
 
         Integer[] results = new Integer[num];

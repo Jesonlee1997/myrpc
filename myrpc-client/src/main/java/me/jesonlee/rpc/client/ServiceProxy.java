@@ -23,7 +23,7 @@ public class ServiceProxy {
     //表示请求的id
     private AtomicLong requestId = new AtomicLong(0);
 
-    private volatile boolean sync = true;
+    private static volatile boolean sync = true;
 
     /**
      * 创建特定接口的代理
@@ -60,34 +60,44 @@ public class ServiceProxy {
             request.setServiceName(serviceName);
             request.setMethodName(methodName);
             request.setArgs(args);
+            ServiceResponse response;
             if (sync) {
-                long start = System.currentTimeMillis();
-                ServiceResponse response = rpcClient.send(request);
-                long end = System.currentTimeMillis();
-                System.out.println("同步调用的时间："+(end - start));//TODO:remove
-                int status = response.getStatus();
-                switch (status) {
-                    case 200:
-                        logger.debug("request " + request.getId() +" invoke success");
-                        return response.getResult();
-                    case 404:
-                        logger.info("provider not found");
-                        return null;
-                    default:
-                        //TODO:记录日志
-                        return null;
+                response = rpcClient.send(request);
+            } else {
+                response = rpcClient.sendAsync(request);
+                if (response == null) {
+                    return null;
                 }
             }
-            rpcClient.sendAsync(request);
-            return null;
+
+            int status = response.getStatus();
+            switch (status) {
+                case ServiceResponse.OK:
+                    logger.debug("request " + request.getId() +" invoke success");
+                    return response.getResult();
+                case ServiceResponse.SERVICE_NOT_FOUND:
+                    logger.warn("service not found");
+                    return null;
+                case ServiceResponse.SERVICE_OFFLINE:
+                    logger.warn("service offline");
+                    return null;
+                case ServiceResponse.TIMEOUT:
+                    logger.warn("response timeout");
+                    return null;
+                case ServiceResponse.THREAD_EXCEPTION:
+                    logger.warn("thread was interrupt");
+                    return null;
+                default:
+                    return null;
+            }
         }
     }
 
-    public void setSync() {
+    public static void setSync() {
         sync = true;
     }
 
-    public void setAsync() {
+    public static void setAsync() {
         sync = false;
     }
 }

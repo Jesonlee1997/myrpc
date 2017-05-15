@@ -13,6 +13,7 @@ public class ServiceResponse implements Serializable {
     public static final int TIMEOUT = 407;
     public static final int THREAD_EXCEPTION = 408;
     public static final int BAD_TYPE = 409;
+    public static final int SERVICE_OFFLINE = 410;
 
     public static ServiceResponse OK(Object o, long id) {
         ServiceResponse response = new ServiceResponse();
@@ -22,11 +23,29 @@ public class ServiceResponse implements Serializable {
         return response;
     }
 
-    public static ServiceResponse ServiceNotFound(long id) {
+    public static ServiceResponse ServiceNotFound(String serviceName, long id) {
         ServiceResponse response = new ServiceResponse();
         response.setId(id);
+        response.setResult(serviceName);
         response.setStatus(SERVICE_NOT_FOUND);
         return response;
+    }
+
+    public static ServiceResponse ServiceOffline(String serviceName, long id) {
+        ServiceResponse response = new ServiceResponse();
+        response.setId(id);
+        response.setResult(serviceName);
+        response.setStatus(SERVICE_OFFLINE);
+        return response;
+    }
+
+    public static ServiceResponse ProviderNotFound(String serviceName, long id) {
+        ServiceResponse response = new ServiceResponse();
+        response.setId(id);
+        response.setResult(serviceName);
+        response.setStatus(PROVIDER_NOT_FOUND);
+        return response;
+
     }
 
     public static ServiceResponse Timeout(long id) {

@@ -14,7 +14,10 @@ import me.jesonlee.rpc.common.ServiceResponse;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * on 2017/5/12.
  */
 public class RpcClient {
+    private static Logger logger = LoggerFactory.getLogger(RpcClient.class);
+
     private Bootstrap bootstrap;
 
     //TODO:使用Spring配置
@@ -41,6 +46,9 @@ public class RpcClient {
 
 
     private final Map<Long, PromiseResponse> responseMap = new ConcurrentHashMap<>();
+
+    public static long start;
+    public static long end;
 
 
     private RpcContext rpcContext = RpcContext.getInstance();
@@ -77,39 +85,36 @@ public class RpcClient {
      */
     public ServiceResponse send(ServiceRequest request) {
 
-        Channel channel;
+        Channel channel = null;
         String serviceName = request.getServiceName();
         try {
             //获得一个Channel
             if (serviceChannelMap.containsKey(serviceName)) {
                 channel = serviceChannelMap.get(serviceName);
-            } else {
+            }
+            if (channel == null || !channel.isOpen()) {
 
                 //从zookeeper拉取服务列表
-                String providerAddress = getProviderAddress(serviceName);//提供者地址，由IP和端口号组成
+                String providerAddress;//提供者地址，由IP和端口号组成
+                providerAddress = getProviderAddress(serviceName);
                 if (providerAddress == null) {
-                    return ServiceResponse.ServiceNotFound(request.getId());
+                    return ServiceResponse.ProviderNotFound(serviceName, request.getId());
                 }
+
                 String[] address = providerAddress.split(":");
                 String host = address[0];
                 int port = Integer.parseInt(address[1]);
-
                 //新建一条链路
                 channel = bootstrap.connect(host, port).sync().channel();
             }
 
-
+            RpcClient.start = System.currentTimeMillis();
             ChannelPromise promise = (ChannelPromise) channel.write(request);
             PromiseResponse promiseResponse = new PromiseResponse(promise);
             responseMap.put(request.getId(), promiseResponse);
 
             //阻塞调用，如果返回null，说明服务器调用超时
-            //TODO:remove
-            long start = System.currentTimeMillis();
             ServiceResponse response = promiseResponse.getResponse();
-            long end = System.currentTimeMillis();
-            System.out.println("等待结果返回阻塞的时间："+(end - start));
-
             if (response == null) {
                 return ServiceResponse.Timeout(request.getId());
             }
@@ -123,8 +128,21 @@ public class RpcClient {
 
         } catch (InterruptedException e) {
             //TODO：处理异常
+            logger.warn(e.getMessage());
             e.printStackTrace();
-            return null;
+            if (channel != null) {
+                channel.close();
+            }
+            return ServiceResponse.ThreadException();
+        } catch (KeeperException e) {
+
+            logger.warn(e.getMessage());
+            e.printStackTrace();
+            return ServiceResponse.ServiceNotFound(serviceName, request.getId());
+        } catch (UndeclaredThrowableException e) {
+            logger.warn(e.getLocalizedMessage());
+            e.printStackTrace();
+            return ServiceResponse.ProviderNotFound(serviceName, request.getId());
         }
     }
 
@@ -135,18 +153,19 @@ public class RpcClient {
      * @return
      */
     public ServiceResponse sendAsync(ServiceRequest request) {
+        Channel channel = null;
+        String serviceName = request.getServiceName();
         try {
-            Channel channel;
-            String serviceName = request.getServiceName();
             //获得一个Channel
             if (serviceChannelMap.containsKey(serviceName)) {
                 channel = serviceChannelMap.get(serviceName);
-            } else {
+            }
+            if (channel == null || !channel.isOpen()) {
 
                 //从zookeeper拉取服务列表
                 String providerAddress = getProviderAddress(serviceName);//提供者地址，由IP和端口号组成
                 if (providerAddress == null) {
-                    return ServiceResponse.ServiceNotFound(request.getId());
+                    return ServiceResponse.ProviderNotFound(serviceName, request.getId());
                 }
                 String[] address = providerAddress.split(":");
                 String host = address[0];
@@ -157,16 +176,29 @@ public class RpcClient {
             }
             ChannelPromise promise = (ChannelPromise) channel.write(request);
             PromiseResponse promiseResponse = new PromiseResponse(promise);
-            promiseResponse.addListener(() -> serviceChannelMap.put(serviceName, channel));
+            Channel finalChannel = channel;
+            promiseResponse.addListener(() -> serviceChannelMap.put(serviceName, finalChannel));
             responseMap.put(request.getId(), promiseResponse);
             rpcContext.addPromise(promiseResponse);
             return null;
         } catch (InterruptedException e) {
             //TODO：处理异常
+            logger.warn(e.getMessage());
             e.printStackTrace();
-            return null;
-        }
+            if (channel != null) {
+                channel.close();
+            }
+            return ServiceResponse.ThreadException();
+        } catch (KeeperException e) {
 
+            logger.warn(e.getMessage());
+            e.printStackTrace();
+            return ServiceResponse.ServiceNotFound(serviceName, request.getId());
+        } catch (UndeclaredThrowableException e) {
+            logger.warn(e.getLocalizedMessage());
+            e.printStackTrace();
+            return ServiceResponse.ProviderNotFound(serviceName, request.getId());
+        }
     }
 
     /**
@@ -175,18 +207,15 @@ public class RpcClient {
      * @param serviceName 服务的名称
      * @return 一个服务器地址，没有对应的服务提供者时返回null
      */
-    private String getProviderAddress(String serviceName) {
+    private String getProviderAddress(String serviceName) throws KeeperException, InterruptedException {
         List<String> providerList = services.get(serviceName);
         if (providerList == null) {
-            try {
-                providerList = serviceRegistry.getProviderAddress(serviceName, providersWatcher);
-                synchronized (services) {
-                    if (services.get(serviceName) == null) {
-                        services.put(serviceName, providerList);
-                    }
+
+            providerList = serviceRegistry.getProviderAddress(serviceName, providersWatcher);
+            synchronized (services) {
+                if (services.get(serviceName) == null) {
+                    services.put(serviceName, providerList);
                 }
-            } catch (KeeperException | InterruptedException e) {
-                e.printStackTrace();
             }
         }
         if (providerList == null || providerList.size() == 0) {
@@ -214,6 +243,7 @@ public class RpcClient {
                 } catch (KeeperException | InterruptedException e) {
                     e.printStackTrace();
                 }
+                logger.info("服务下的子节点发生改变");
                 System.out.println("服务子节点被改变");//TODO:log
             }
         }
@@ -228,12 +258,16 @@ public class RpcClient {
             buf.readBytes(bytes);
 
             ServiceResponse response = HessianUtil.bytesToResponse(bytes);
+
             long id = response.getId();
             PromiseResponse promiseResponse = responseMap.get(id);
 
             if (promiseResponse != null) {
                 promiseResponse.setResponse(response);
             }
+
+            //释放buf中缓存的数据
+            buf.release();
         }
     }
 }

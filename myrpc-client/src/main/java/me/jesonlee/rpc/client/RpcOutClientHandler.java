@@ -22,5 +22,7 @@ public class RpcOutClientHandler extends ChannelOutboundHandlerAdapter {
         buf.writeInt(bytes.length);
         buf.writeBytes(bytes);
         ctx.writeAndFlush(buf);
+
+        //buf.release();TODO
     }
 }

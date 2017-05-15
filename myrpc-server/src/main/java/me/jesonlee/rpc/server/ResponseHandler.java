@@ -18,8 +18,8 @@ public class ResponseHandler extends ChannelOutboundHandlerAdapter {
         ServiceResponse result = (ServiceResponse) msg;
         byte[] response = HessianUtil.responseToBytes(result);
         ByteBuf resp = Unpooled.buffer(response.length + 4);
-        resp.writeInt(response.length);
 
+        resp.writeInt(response.length);
         resp.writeBytes(response);
         ctx.writeAndFlush(resp);
     }
