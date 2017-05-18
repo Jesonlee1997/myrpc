@@ -33,7 +33,7 @@ server包的使用
 需配置Server实例的port  
 <br>
 
----
+---  
 client包的使用  
 配置注册中心ServiceRegistry  
 使用Spring配置需要引用的的服务   
@@ -64,7 +64,9 @@ client端有异步和同步两种服务调用方式
 额外信息：  
 与server端建立的是长连接  
 实现服务的同步调用依靠的是netty的promise机制  
-实现服务的异步调用则用到了Future  
-
+实现服务的异步调用则用到了Rpc上下文
+<br>
+---  
+<br>
 myrpc-test中包含了Netty的一个简单的聊天服务器和Netty回显服务器
 以及一些测试程序
