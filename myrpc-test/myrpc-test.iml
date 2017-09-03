@@ -16,6 +16,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="myrpc-client" />
+    <orderEntry type="module" module-name="myrpc-common" />
+    <orderEntry type="module" module-name="myrpc-server" />
     <orderEntry type="library" name="Maven: com.esotericsoftware:kryo:4.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.esotericsoftware:reflectasm:1.11.3" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm:5.0.4" level="project" />

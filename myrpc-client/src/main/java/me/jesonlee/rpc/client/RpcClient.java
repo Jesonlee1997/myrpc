@@ -7,10 +7,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import me.jesonlee.rpc.common.HessianUtil;
 import me.jesonlee.rpc.common.ServiceRegistry;
 import me.jesonlee.rpc.common.ServiceRequest;
 import me.jesonlee.rpc.common.ServiceResponse;
+import me.jesonlee.rpc.common.serialize.SerializeUtil;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -34,7 +34,7 @@ public class RpcClient {
     private Bootstrap bootstrap;
 
     //TODO:使用Spring配置
-    private ServiceRegistry serviceRegistry = new ServiceRegistry("192.168.56.101:2181");
+    private ServiceRegistry serviceRegistry = new ServiceRegistry("127.0.0.1:2181");
     private Watcher providersWatcher = new ProvidersChangedWatcher();//注册在zooKeeper上的监听器
     private AtomicInteger round = new AtomicInteger(0);//轮询服务器列表的号码
 
@@ -44,11 +44,11 @@ public class RpcClient {
     //TODO：使每个服务可以连接的Channel个数可配置
     private final Map<String, Channel> serviceChannelMap = new ConcurrentHashMap<>();
 
+    //private final ServicesInfoManager servicesInfoManager = ServicesInfoManager.getInstance();
+
 
     private final Map<Long, PromiseResponse> responseMap = new ConcurrentHashMap<>();
 
-    public static long start;
-    public static long end;
 
 
     private RpcContext rpcContext = RpcContext.getInstance();
@@ -62,7 +62,7 @@ public class RpcClient {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new RpcOutClientHandler());
+                        pipeline.addLast(new RequestEncoder());
 
                         pipeline.addFirst(new LengthFieldBasedFrameDecoder(
                                 10000000,
@@ -87,11 +87,13 @@ public class RpcClient {
 
         Channel channel = null;
         String serviceName = request.getServiceName();
+
         try {
             //获得一个Channel
             if (serviceChannelMap.containsKey(serviceName)) {
                 channel = serviceChannelMap.get(serviceName);
             }
+            //channel = servicesInfoManager.getChannel(serviceName);
             if (channel == null || !channel.isOpen()) {
 
                 //从zookeeper拉取服务列表
@@ -108,7 +110,6 @@ public class RpcClient {
                 channel = bootstrap.connect(host, port).sync().channel();
             }
 
-            RpcClient.start = System.currentTimeMillis();
             ChannelPromise promise = (ChannelPromise) channel.write(request);
             PromiseResponse promiseResponse = new PromiseResponse(promise);
             responseMap.put(request.getId(), promiseResponse);
@@ -127,7 +128,6 @@ public class RpcClient {
             return response;
 
         } catch (InterruptedException e) {
-            //TODO：处理异常
             logger.warn(e.getMessage());
             e.printStackTrace();
             if (channel != null) {
@@ -182,7 +182,6 @@ public class RpcClient {
             rpcContext.addPromise(promiseResponse);
             return null;
         } catch (InterruptedException e) {
-            //TODO：处理异常
             logger.warn(e.getMessage());
             e.printStackTrace();
             if (channel != null) {
@@ -226,6 +225,10 @@ public class RpcClient {
 
     }
 
+    public void close() {
+        serviceRegistry.close();
+    }
+
     /**
      * 监听器，一旦服务节点的子节点发生了变化，说明有机器上线或下线
      * 这个时候需要更新services和servicesChannelMap
@@ -244,7 +247,6 @@ public class RpcClient {
                     e.printStackTrace();
                 }
                 logger.info("服务下的子节点发生改变");
-                System.out.println("服务子节点被改变");//TODO:log
             }
         }
     }
@@ -257,7 +259,7 @@ public class RpcClient {
             byte[] bytes = new byte[buf.readableBytes()];
             buf.readBytes(bytes);
 
-            ServiceResponse response = HessianUtil.bytesToResponse(bytes);
+            ServiceResponse response = SerializeUtil.getResponse(bytes);
 
             long id = response.getId();
             PromiseResponse promiseResponse = responseMap.get(id);

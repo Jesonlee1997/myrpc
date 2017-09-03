@@ -27,7 +27,7 @@ public class ServiceManager {
     }
 
     //TODO:使用spring注入
-    private ServiceRegistry registry = new ServiceRegistry("192.168.56.101:2181");
+    private ServiceRegistry registry = new ServiceRegistry("127.0.0.1:2181");
     private static final int COUNT = 200000;
 
     //业务处理线程池

@@ -5,18 +5,18 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import me.jesonlee.rpc.common.HessianUtil;
 import me.jesonlee.rpc.common.ServiceResponse;
+import me.jesonlee.rpc.common.serialize.SerializeUtil;
 
 /**
  * Created by JesonLee
  * on 2017/5/13.
  */
-public class ResponseHandler extends ChannelOutboundHandlerAdapter {
+public class ResponseEncoder extends ChannelOutboundHandlerAdapter {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         ServiceResponse result = (ServiceResponse) msg;
-        byte[] response = HessianUtil.responseToBytes(result);
+        byte[] response = SerializeUtil.getBytes(result);
         ByteBuf resp = Unpooled.buffer(response.length + 4);
 
         resp.writeInt(response.length);

@@ -25,6 +25,7 @@ public class ServiceRegistry {
                     latch.countDown();
                 }
             });
+
             latch.await();
             if (zooKeeper.exists(servicesRootPath, false) == null) {
                 zooKeeper.create(servicesRootPath,
@@ -70,5 +71,13 @@ public class ServiceRegistry {
             return zooKeeper.getChildren(servicePath, watcher);
         }
         return null;
+    }
+
+    public void close() {
+        try {
+            zooKeeper.close();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

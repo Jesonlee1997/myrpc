@@ -10,7 +10,7 @@ import org.junit.Test;
  */
 public class TestMain {
     private RpcContext rpcContext = RpcContext.getInstance();
-    private int num = 500;
+    private int num = 1;
 
     @Test
     //测试同步调用
@@ -33,10 +33,10 @@ public class TestMain {
         System.out.println(end - start);
 
         for (int result : results) {
-            //System.out.println(result);
+            System.out.println(result);
         }
 
-
+        proxy.close();
 
     }
 

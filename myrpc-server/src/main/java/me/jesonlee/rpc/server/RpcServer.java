@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  * Created by JesonLee
  * on 2017/5/11.
  */
-public class RpcProvider {
+public class RpcServer {
     private ServiceManager serviceManager = ServiceManager.getInstance();
-    private static Logger logger = LoggerFactory.getLogger(RpcProvider.class);
+    private static Logger logger = LoggerFactory.getLogger(RpcServer.class);
 
     /**
      * 启动服务提供者
@@ -36,7 +36,7 @@ public class RpcProvider {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new ResponseHandler());
+                        pipeline.addLast(new ResponseEncoder());
 
                         pipeline.addFirst(new LengthFieldBasedFrameDecoder(
                                 10000000,

@@ -40,6 +40,10 @@ public class ServiceProxy {
         return (T) o;
     }
 
+    public void close() {
+        rpcClient.close();
+    }
+
     /**
      * invocationHandler
      */
