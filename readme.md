@@ -1,8 +1,9 @@
 JesonLee的RPC框架，使用Netty+Hessian+zookeeper完成  
 -----
 <br>
-common包中包括  
-通用的ServiceRequest的定义  
+传送门：[设计与实现](http://blog.jesonlee.me/21/)
+common包中包括  
+通用的ServiceRequest的定义  
 通用的ServiceResponse的定义  
 序列化的工具（目前只有Hessian）  
 注册中心ServiceRegistry，提供服务列表查询和服务注册的功能。  
