@@ -9,15 +9,31 @@ import java.io.IOException;
  * Created by JesonLee
  * on 2017/9/3.
  */
-public class SerializeUtil {
-    private static SerializeStrategy strategy;
+public class Serialization {
+    private SerializeStrategy strategy;
+    private static final Serialization DEFAULT_SERIALIZATIONY = new Serialization(new HessianStrategy());
 
-    static {
-        strategy = new HessianStrategy();
+
+    private Serialization(SerializeStrategy strategy) {
+        this.strategy = strategy;
     }
 
+    public static Serialization getSerialization(int strategy) {
+        switch (strategy) {
+            case SerializeStrategy.HESSIAN_STRATEGY:
+                return DEFAULT_SERIALIZATIONY;
+            case SerializeStrategy.KryoStrategy:
+                return new Serialization(new KryoStrategy());
+            default:
+                return DEFAULT_SERIALIZATIONY;
+        }
+    }
 
-    public static ServiceRequest getRequest(byte[] bytes) {
+    public static Serialization getDefaultSerialization() {
+         return DEFAULT_SERIALIZATIONY;
+    }
+
+    public ServiceRequest getRequest(byte[] bytes) {
         ServiceRequest request;
         try {
             request = (ServiceRequest) strategy.bytesToObject(bytes);
@@ -31,7 +47,7 @@ public class SerializeUtil {
         return request;
     }
 
-    public static ServiceResponse getResponse(byte[] bytes) {
+    public ServiceResponse getResponse(byte[] bytes) {
         ServiceResponse response;
         try {
             response = (ServiceResponse) strategy.bytesToObject(bytes);
@@ -45,7 +61,7 @@ public class SerializeUtil {
         return response;
     }
 
-    public static byte[] getBytes(ServiceRequest request) {
+    public byte[] getBytes(ServiceRequest request) {
         byte[] bytes = null;
         try {
             bytes = strategy.objectToBytes(request);
@@ -55,7 +71,7 @@ public class SerializeUtil {
         return bytes;
     }
 
-    public static byte[] getBytes(ServiceResponse response) {
+    public byte[] getBytes(ServiceResponse response) {
         byte[] bytes = null;
         try {
             bytes = strategy.objectToBytes(response);

@@ -7,6 +7,10 @@ import java.io.IOException;
  * on 2017/9/3.
  */
 public interface SerializeStrategy {
+    int HESSIAN_STRATEGY = 0;
+    int KryoStrategy = 1;
+
+
     byte[] objectToBytes(Object o) throws IOException;
     Object bytesToObject(byte[] bytes) throws IOException;
 }

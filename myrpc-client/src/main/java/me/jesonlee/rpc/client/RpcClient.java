@@ -10,7 +10,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import me.jesonlee.rpc.common.ServiceRegistry;
 import me.jesonlee.rpc.common.ServiceRequest;
 import me.jesonlee.rpc.common.ServiceResponse;
-import me.jesonlee.rpc.common.serialize.SerializeUtil;
+import me.jesonlee.rpc.common.serialize.Serialization;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -49,9 +49,9 @@ public class RpcClient {
 
     private final Map<Long, PromiseResponse> responseMap = new ConcurrentHashMap<>();
 
-
-
     private RpcContext rpcContext = RpcContext.getInstance();
+
+    private Serialization serialization = Serialization.getDefaultSerialization();
 
     public RpcClient() {
         Bootstrap bootstrap = new Bootstrap();
@@ -259,7 +259,7 @@ public class RpcClient {
             byte[] bytes = new byte[buf.readableBytes()];
             buf.readBytes(bytes);
 
-            ServiceResponse response = SerializeUtil.getResponse(bytes);
+            ServiceResponse response = serialization.getResponse(bytes);
 
             long id = response.getId();
             PromiseResponse promiseResponse = responseMap.get(id);
