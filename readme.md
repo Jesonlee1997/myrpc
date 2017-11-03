@@ -18,8 +18,10 @@ common包中包括：  
 如果服务已经被注册过，那么会在这个服务对应的持久节点下，建立一个临时节点，这个节点表示服务器的地址  
 当服务器宕机后，临时节点被删除，ServiceRegistry会通知这个服务的消费者更新服务器列表     
 <br>
----
-server包的使用  
+——————————————————————————————————————————— 
+
+server包的使用  
+
 在Spring的配置文件中配置需要发布的Service  
 配置注册中心ServiceRegistry的zookeeper服务器的地址   
 然后启动server和Spring容器  
@@ -37,8 +39,8 @@ server包的使用
 在一个应用中ServiceManager是单例的，ServiceManager需要注入ServiceRegistry，ServiceRegistry也是单例的  
 需配置Server实例的port  
 <br>
+———————————————————————————————————————————  
 
----  
 client包的使用  
 配置注册中心ServiceRegistry  
 使用Spring配置需要引用的的服务   
@@ -72,7 +74,7 @@ client端有异步和同步两种服务调用方式
 实现服务的异步调用则用到了Rpc上下文
 
 <br>
----  
-<br>
+———————————————————————————————————————————  
+
 myrpc-test中包含了Netty的一个简单的聊天服务器和Netty回显服务器
 以及一些测试程序
